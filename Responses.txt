@@ -1,0 +1,59 @@
+Winter 2021 Data Science Intern Challenge
+
+1a.
+There are a couple things that could be going wrong with this data. The first is that large orders will be over-represented; for example, bulk orders of thousands of shoes will make a huge impact on the average as they cost a lot, making it seem as if most people spend a lot on their shoes. Another thing that could be potentially affecting the data is that different shoe shops might be selling different varieties of sneakers. For example, you may have one shop selling signed basketball sneakers, which will cost much more than average sneakers. These outliers will make the data less accurate, again causing an overestimate of the cost.
+
+1b.
+The main metric that I would use would be the mean cost of a sneaker times the median number of total items ordered. This will allow the numbers to not be influenced by huge bulk orders as much, and preserve the basic idea of this metric; how much will the average person spend on sneakers. As for the premium sneakers, I might isolate that store as an outlier and calculate a separate value removing that number. It really depends on what is trying to be measured, however, as to whether removing this outlier would be an effective strategy or not. To determine what the average value would be for a new sneaker store, it might be better to remove the value as this store would not be selling premium sneakers. However, when trying to determine how much sneaker sales stack up against other categories of business it might make sense to include this value, as premium sneakers would still definitely be sneakers.
+
+The value I give in the next part will include the outliers, and will simply be mean cost of an item times the median number of total items.
+
+1c.
+The value is $715.84; this comes from a median of 2 sneakers per order and a mean value per sneaker of $357.92.
+
+2a.
+54 orders were shipped.
+Query:
+SELECT COUNT(ShipperID) 
+FROM Orders 
+WHERE ShipperID = 
+    (SELECT ShipperID 
+    FROM Shippers
+    WHERE ShipperName = "Speedy Express");
+
+2b.
+The last name of the employee with the most orders is Peacock.
+Query:
+SELECT LastName
+FROM Employees
+WHERE EmployeeID = 
+    (SELECT EmployeeID 
+    FROM 
+        (SELECT COUNT(EmployeeID), EmployeeID
+        FROM Orders 
+        GROUP BY EmployeeID 
+        ORDER BY COUNT(EmployeeID) DESC)
+    LIMIT 1);
+
+2c.
+The product ordered most by customers in Germany is Boston Crab Meat.
+Query:
+SELECT ProductName
+FROM Products
+WHERE ProductID IN 
+    (SELECT ProductID
+    FROM 
+        (SELECT SUM(Quantity), ProductID
+        FROM 
+            (SELECT ProductID, Quantity 
+            FROM OrderDetails
+            WHERE OrderID IN 
+                (SELECT OrderID 
+                FROM Orders 
+                WHERE CustomerID IN 
+                    (SELECT CustomerID 
+                    FROM Customers
+                    WHERE Country = "Germany"))) 
+        GROUP BY ProductID 
+        ORDER BY SUM(Quantity) DESC)
+    LIMIT 1);
